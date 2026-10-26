@@ -1,5 +1,5 @@
 import { ArrowRight, Loader2, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ConnectorInfo, Profile } from '../../shared/types.ts';
 import { api } from '../lib/api.ts';
 import { PlatformPicker } from './PlatformPicker.tsx';
@@ -14,6 +14,7 @@ interface Props {
 }
 
 export function ProfileAdder({ connectors, platform, onPlatform, onAdd, disabled, cta = 'Fetch' }: Props) {
+  const inputId = useId();
   const [handle, setHandle] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,15 +35,17 @@ export function ProfileAdder({ connectors, platform, onPlatform, onAdd, disabled
   };
 
   return (
-    <div>
+    // Own stacking layer so the platform dropdown sits above the cards and buttons below it
+    <div className="relative z-30">
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
         className="flex flex-col gap-2 rounded-3xl border border-white/10 bg-soot/80 p-2 backdrop-blur sm:flex-row"
       >
         <PlatformPicker connectors={connectors} value={platform} onChange={(c) => { onPlatform(c); setError(''); }} />
-        <label className="sr-only" htmlFor="handle">{platform?.inputLabel ?? 'Username'}</label>
+        <label className="sr-only" htmlFor={inputId}>{platform?.inputLabel ?? 'Username'}</label>
         <input
-          id="handle"
+          id={inputId}
+          data-handle-input
           value={handle}
           onChange={(e) => setHandle(e.target.value)}
           placeholder={platform ? `${platform.inputLabel} — e.g. ${platform.placeholder}` : 'Username or profile URL'}

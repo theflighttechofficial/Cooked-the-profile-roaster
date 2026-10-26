@@ -18,6 +18,7 @@ export function Avatar({ src, name, size = 56 }: { src?: string; name: string; s
 
 export function ProfileCard({ p, connector, onRemove, compact }: { p: Profile; connector?: ConnectorInfo; onRemove?: () => void; compact?: boolean }) {
   const list = p.lists[0];
+  const stats = p.stats.slice(0, compact ? 3 : 6);
   return (
     <article className="card relative flex flex-col gap-4 p-5 animate-rise">
       {onRemove && (
@@ -42,8 +43,8 @@ export function ProfileCard({ p, connector, onRemove, compact }: { p: Profile; c
       {!compact && p.bio && <p className="line-clamp-3 text-sm text-cream/80">{p.bio}</p>}
 
       {p.stats.length > 0 && (
-        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-xl bg-white/5">
-          {p.stats.slice(0, compact ? 3 : 6).map((s) => (
+        <dl className={`grid gap-px overflow-hidden rounded-xl bg-white/5 ${stats.length % 3 === 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {stats.map((s) => (
             <div key={s.label} className="bg-soot px-3 py-2.5">
               <dt className="truncate font-mono text-[10px] uppercase tracking-wider text-dust">{s.label}</dt>
               <dd className="truncate font-display text-lg font-bold">{s.value}</dd>
