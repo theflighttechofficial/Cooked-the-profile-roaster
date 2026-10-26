@@ -1,6 +1,6 @@
 {
   "name": "Cooked - The Profile Roaster",
-  "description": "Connect third-party profiles (Spotify, Steam, GitHub, Letterboxd, Chess.com) and get AI-powered savage roasts, red flag analysis, and viral shareable status cards.",
+  "description": "Pull real public stats from 34 platforms (GitHub, LeetCode, Steam, Letterboxd, Bluesky, Chess.com and more) and get an AI roast built from your actual data.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

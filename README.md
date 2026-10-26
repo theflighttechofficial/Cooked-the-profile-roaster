@@ -1,115 +1,101 @@
-# 🔥 COOKED — AI Profile Roaster & Footprint Auditor
+# cooked. — get roasted by your own data
 
-> **Get roasted based on your real digital footprint.** Powered by Google Gemini AI.
+Type a username. Cooked pulls your real public stats from one of **34 platforms**, then an AI roasts you with them.
 
-**COOKED** inspects your live public profiles across 15+ developer, coding, professional, and gaming platforms, extracts verified footprint receipts, and generates savage, highly specific AI roasts with audio narration, interactive battle modes, and exportable social posters.
+- **Roast**: stack up to 4 profiles from different platforms for one cross-platform roast. You can also paste text the APIs can't reach, like a LinkedIn "about" section or a resume.
+- **Battle**: two profiles fight over three rounds, and the AI picks who is less cooked.
+- **Screenshot**: upload any screenshot (Spotify Wrapped, a bio, Screen Time) and Gemini reads it.
+- 6 roaster personas × 3 heat levels. You can save the result as a PNG, copy it, share it, or have your browser read it out loud.
+- With no AI key, an offline roaster still writes roasts from your real numbers.
 
----
+## Connectors
 
-## 🌟 Key Features
+Each connector uses an official public API or a public feed. None needs a login, and none scrapes pages that sit behind a login.
 
-### 1. 🌐 Live Verified Profile Inspection (15+ Platforms)
-Fetch real-time public stats, top projects, problem-solving ranks, and activity receipts:
-- **GitHub**: Repositories, stars, top languages, commit activity.
-- **LinkedIn**: Custom professional profile builder, headline, location, summary, and skills verification.
-- **LeetCode**: Solved problem breakdown (Easy, Medium, Hard), global ranking, and acceptance rate.
-- **Codeforces**: Rating, rank, max rating, contribution, and contest history.
-- **GitLab**: Open-source repositories, activity, and star count.
-- **Dev.to**: Published articles, reaction counts, and follower footprint.
-- **npm Maintainer**: Published npm packages, package downloads, and version stats.
-- **Chess.com**: Rapid, Blitz, and Bullet ratings, GM titles, and win/loss ratios.
-- **HackerNews**: Karma score, submission counts, and user bio.
-- **Duolingo**: Day streak, course progress, and total XP.
-- **MyAnimeList**: Days watched, mean score, completed anime, and dropped list.
-- **Letterboxd**: Film log count, recent movie reviews, and rating distribution.
-- **Steam**: Hours played over the past 2 weeks, top games, and achievements.
-- **Spotify**: Top artists, listened tracks, and genre preferences.
-- **Resume / Image OCR**: Upload any profile screenshot, resume PDF, or design portfolio for instant AI extraction.
+| Category | Platform | Source |
+|---|---|---|
+| Code | GitHub | REST API v3 (`GITHUB_TOKEN` optional) |
+| | GitLab | REST API v4 |
+| | Codeberg | Forgejo API v1 |
+| | Stack Overflow | Stack Exchange API 2.3 |
+| | npm | Registry search + downloads API |
+| | crates.io | crates.io API v1 |
+| | Hugging Face | Hub API |
+| | Docker Hub | Hub API v2 |
+| Compete | LeetCode | Public GraphQL |
+| | Codeforces | Official API |
+| | AtCoder | Contest history JSON + kenkoooo API |
+| | Codewars | API v1 |
+| | Monkeytype | Public profile API |
+| Social | Hacker News | Firebase API + Algolia search |
+| | Lobsters | User JSON |
+| | DEV | Forem API |
+| | Hashnode | GraphQL API |
+| | Medium | RSS feed |
+| | Bluesky | AppView XRPC (public) |
+| | Mastodon | Any instance, REST API |
+| | Reddit | OAuth API (`REDDIT_CLIENT_ID/SECRET` recommended) |
+| | Wikipedia | MediaWiki Action API |
+| Taste | Letterboxd | RSS feed |
+| | MyAnimeList | Jikan API v4 |
+| | AniList | GraphQL API |
+| | Last.fm | API 2.0 (**`LASTFM_API_KEY` required**) |
+| | Discogs | API v2 |
+| | Open Library | Reading log JSON |
+| Games | Steam | Community XML (`STEAM_API_KEY` optional, adds the full library) |
+| | Chess.com | Published-data API |
+| | Lichess | API |
+| | Duolingo | Unofficial public endpoint |
+| | speedrun.com | REST API v1 |
+| | Pokémon Showdown | User JSON |
 
----
+Every connector returns the same shape (`Profile` in `shared/types.ts`): stats, lists and plain-text "facts". The roaster gets only those facts and is told not to invent any.
 
-### 2. 🎭 Roast Personalities & Custom Intensity
-Tailor the roast style to your liking:
-- **Sarcastic Tech Lead**: Passive-aggressive code reviewer vibes.
-- **Unfiltered Stand-up Comedian**: No-holds-barred roasts.
-- **Corporate HR Manager**: Passive-aggressive corporate speak with PIP memos.
-- **Gamer / Anime Elitist**: Toxic lobby energy.
+The input box accepts handles, `@handles` and full profile URLs. Mastodon takes `user@instance` and checks that the host is a public address before any request goes out. Stack Overflow takes a user ID, a profile URL or a display name.
 
----
+### Check that the connectors work
 
-### 3. 🔊 Voice Narrator (Gemini Speech TTS)
-Listen to your roast spoken aloud with selectable voice actors:
-- **Kore**: Dramatic & theatrical.
-- **Puck**: High-energy Stand-up.
-- **Zephyr**: Deadpan cynic.
-- **Fenrir**: Deep voice of doom.
+```bash
+npm run check:connectors              # every connector, against a real example account
+npm run check:connectors github steam # only some
+```
 
----
+## Run it
 
-### 4. 🎨 Custom Social Media Poster Studio
-Export viral social graphics for Instagram Stories, X (Twitter), TikTok, or Discord:
-- **Aspect Ratios**: 9:16 Story (1080x1920), 1:1 Feed (1080x1080), 16:9 Banner (1200x630), and Longcard Infographic.
-- **Visual Themes**: Cyber Fire, Scandal News Tabloid, Retro VHS, Toxic Poison, Synthwave, and Obsidian Monolith.
-- **Zero Cutoff Export Engine**: Automatically calculates exact scroll dimensions so no paragraphs or receipts get cropped.
-- **Resolution Quality**: Ultra HD (2x) and Super 4K (3x) crisp PNG exports.
-- **Native Mobile Share**: Direct file sharing via system share dialog (`navigator.share`).
+```bash
+npm install
+cp .env.example .env   # add GEMINI_API_KEY at least
+npm run dev            # http://localhost:3000
+```
 
----
+Production:
 
-### 5. ⚔️ Multiplayer Roast Battles & Wall of Shame
-- **1v1 Profile Battles**: Compare two profiles side-by-side to see who gets cooked harder.
-- **Wall of Shame**: Post your worst roasts to the global public leaderboard.
+```bash
+npm run build   # client into dist/, server into dist/server.js
+npm start
+```
 
----
+Other scripts: `npm run lint` (type check), `npm test` (handle parsing tests).
 
-## 🛠️ Tech Stack
+## Layout
 
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide Icons, Canvas Confetti.
-- **Backend / Express**: Node.js, Express, `html-to-image`, `@google/genai` (Google Gemini API SDK).
-- **AI Models**: Google Gemini 2.5 Flash / Gemini Pro for roast generation and TTS voice synthesis.
+```
+server/
+  index.ts            Express routes + Vite middleware in dev
+  http.ts             fetch with timeout/retry, XML and text helpers
+  roast.ts            Gemini prompts, schemas, model fallback, offline roaster
+  connectors/         one file per category, registry in index.ts
+shared/types.ts       types used by the server and the client
+src/                  React 19 + Tailwind 4 client
+scripts/              connector health check
+```
 
----
+## API
 
-## 🚀 Quick Start
+- `GET /api/connectors`: the platform list, and whether AI is on
+- `GET /api/profile/:platform?handle=`: one normalized profile (cached for 10 minutes)
+- `POST /api/roast` `{ profiles: [{platform, handle}], persona, heat, extra }`
+- `POST /api/battle` `{ profiles: [a, b], persona, heat }`
+- `POST /api/roast/image` `{ image: dataURL, persona, heat, note }`
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Environment Configuration**:
-   Create a `.env` file or export your Gemini API key:
-   ```env
-   GEMINI_API_KEY=your_google_gemini_api_key
-   ```
-
-3. **Run Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
-
-4. **Build for Production**:
-   ```bash
-   npm run build
-   npm start
-   ```
-
----
-
-## 🛰️ API Routes Overview
-
-- `GET /api/platform/github?username=...` — Fetches real GitHub user profile & repo footprint.
-- `GET /api/platform/linkedin?username=...` — Extracts LinkedIn profile metadata & headline data.
-- `GET /api/platform/leetcode?username=...` — Fetches LeetCode solved metrics & rank.
-- `GET /api/platform/codeforces?username=...` — Fetches Codeforces ratings & rank.
-- `GET /api/platform/*` — Endpoints for Dev.to, npm, Chess.com, HackerNews, Duolingo, MyAnimeList, Letterboxd, and Steam.
-- `POST /api/roast/generate` — Generates structured roast JSON using Google Gemini API.
-- `POST /api/roast/tts` — Synthesizes audio narration using Gemini TTS.
-- `POST /api/ocr` — Extracts text and stats from uploaded resume or profile screenshot images.
-
----
-
-## 📄 License
-
-MIT License. Designed with 🔥 for developers and tech enthusiasts.
+The roast endpoints fetch every profile again on the server, so a client cannot send made-up stats to the AI.
