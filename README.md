@@ -8,6 +8,20 @@ Type a username. Cooked pulls your real public stats from one of **34 platforms*
 - 6 roaster personas × 3 heat levels. You can save the result as a PNG, copy it, share it, or have your browser read it out loud.
 - With no AI key, an offline roaster still writes roasts from your real numbers.
 
+![Cooked home page](docs/screenshots/hero.webp)
+
+## Screenshots
+
+The profiles below are real crates.io, Docker Hub and GitLab data. The roast text comes from the offline roaster; with `GEMINI_API_KEY` set, Gemini writes it instead.
+
+| Build your plate | The roast |
+|---|---|
+| ![Two fetched profiles with persona and heat controls](docs/screenshots/plate.webp) | ![Roast card with score dial, red flags and diagnostics](docs/screenshots/roast.webp) |
+| **Roast battle** | **All 34 platforms** |
+| ![Battle between two profiles over three rounds](docs/screenshots/battle.webp) | ![Grid of every connector, grouped by category](docs/screenshots/platforms.webp) |
+
+<p align="center"><img src="docs/screenshots/mobile.webp" alt="Cooked on a phone" width="300"></p>
+
 ## Connectors
 
 Each connector uses an official public API or a public feed. None needs a login, and none scrapes pages that sit behind a login.
