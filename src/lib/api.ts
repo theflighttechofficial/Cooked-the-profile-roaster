@@ -7,8 +7,10 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new Error('Could not reach the Cooked server. Is it running?');
   }
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body?.error || `Request failed (${res.status})`);
+  const body = await res.json().catch(() => null);
+  // No JSON at all means the request never reached the API (static-only hosting, wrong route)
+  if (body === null) throw new Error(`The Cooked API is not reachable (${res.status}). The site was deployed without its server.`);
+  if (!res.ok) throw new Error(body.error || `Request failed (${res.status})`);
   return body as T;
 }
 
