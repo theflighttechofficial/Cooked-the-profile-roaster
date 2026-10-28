@@ -75,13 +75,26 @@ npm run build   # client into dist/, server into dist/server.js
 npm start
 ```
 
+### Deploy to Vercel
+
+`vercel.json` runs `npm run build:vercel`. That script writes `.vercel/output` (Build Output API v3):
+the Vite client as static files, and the Express API bundled into one Node function that serves every `/api/*` route.
+
+1. Import the repo in Vercel. Keep the defaults; `vercel.json` sets the build.
+2. In **Settings → Environment Variables**, add `GEMINI_API_KEY` (and any optional keys from `.env.example`).
+3. Redeploy. Environment variables only apply to new deployments.
+
+Check it: `https://<your-app>.vercel.app/api/health` should return `{"ok":true,"ai":true}`.
+
 Other scripts: `npm run lint` (type check), `npm test` (handle parsing tests).
 
 ## Layout
 
 ```
 server/
-  index.ts            Express routes + Vite middleware in dev
+  app.ts              Express API routes
+  index.ts            long-running server: API + Vite in dev, static files in prod
+  vercel.ts           Vercel function entry (same API)
   http.ts             fetch with timeout/retry, XML and text helpers
   roast.ts            Gemini prompts, schemas, model fallback, offline roaster
   connectors/         one file per category, registry in index.ts
