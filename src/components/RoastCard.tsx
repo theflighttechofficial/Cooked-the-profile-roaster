@@ -2,6 +2,7 @@ import { toPng } from 'html-to-image';
 import { Check, Copy, Download, Flag, Loader2, RotateCcw, Share2, Sparkles, Square, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { Profile, Roast } from '../../shared/types.ts';
+import { REPO_URL, SITE_URL, bare } from '../lib/site.ts';
 import { doneness } from '../lib/ui.ts';
 import { Avatar } from './ProfileCard.tsx';
 import { ScoreDial } from './ScoreDial.tsx';
@@ -17,6 +18,8 @@ export function roastText(r: Roast, subjects: { displayName: string }[]) {
     ...r.redFlags.map((f) => `🚩 ${f}`),
     '',
     `"${r.shareQuote}"`,
+    '',
+    `Get roasted: ${SITE_URL}`,
   ].join('\n');
 }
 
@@ -43,6 +46,8 @@ export function RoastCard({ roast, subjects, onReset }: { roast: Roast; subjects
     if (!cardRef.current) return;
     setSaving(true);
     try {
+      // Let React paint the watermark (shown only while saving) before the capture
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const url = await capture(cardRef.current);
       const a = document.createElement('a');
       a.href = url;
@@ -62,7 +67,11 @@ export function RoastCard({ roast, subjects, onReset }: { roast: Roast; subjects
   const share = async () => {
     const text = roastText(roast, subjects);
     if (navigator.share) await navigator.share({ title: 'I got cooked', text }).catch(() => {});
-    else window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text.slice(0, 270))}`, '_blank', 'noopener');
+    else {
+      // Keep the tweet short; the link goes in its own param so it never gets cut off
+      const short = text.split('\n').slice(0, 2).join('\n');
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(short)}&url=${encodeURIComponent(SITE_URL)}`, '_blank', 'noopener');
+    }
   };
 
   const speak = () => {
@@ -166,6 +175,16 @@ export function RoastCard({ roast, subjects, onReset }: { roast: Roast; subjects
             <span>{d.note}</span>
             <span>{new Date().toLocaleDateString()}</span>
           </footer>
+
+          {saving && (
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-4 font-mono text-[11px] text-dust">
+              <span>
+                <span className="font-display text-sm font-extrabold text-cream">cooked<span className="text-ember">.</span></span> get roasted at{' '}
+                <span className="text-flame">{bare(SITE_URL)}</span>
+              </span>
+              <span>{bare(REPO_URL)}</span>
+            </div>
+          )}
         </div>
       </div>
 
