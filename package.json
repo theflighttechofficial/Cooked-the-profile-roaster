@@ -2,6 +2,7 @@
   "name": "cooked-profile-roaster",
   "private": true,
   "version": "3.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --ignore ./src --ignore ./dist server/index.ts",

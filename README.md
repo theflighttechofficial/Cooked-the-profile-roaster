@@ -1,22 +1,42 @@
 # cooked. — get roasted by your own data
 
-Type a username. Cooked pulls your real public stats from one of **34 platforms**, then an AI roasts you with them.
+Type a username from one of 34 platforms. Cooked pulls your real public stats and an AI turns them into a roast card you can share.
 
-- **Roast**: stack up to 4 profiles from different platforms for one cross-platform roast. You can also paste text the APIs can't reach, like a LinkedIn "about" section or a resume.
-- **Battle**: two profiles fight over three rounds, and the AI picks who is less cooked.
-- **Screenshot**: upload any screenshot (Spotify Wrapped, a bio, Screen Time) and Gemini reads it.
-- 6 roaster personas × 3 heat levels. You can save the result as a PNG, copy it, share it, or have your browser read it out loud.
+**[Try it live →](https://cooked-the-profile-roaster.vercel.app)**
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftheflighttechofficial%2FCooked-the-profile-roaster&env=GEMINI_API_KEY&envDescription=Gemini%20API%20key%20for%20AI-written%20roasts&envLink=https%3A%2F%2Faistudio.google.com%2Fapikey)
+[![License: MIT](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
+
+![Roast card for real crates.io and Docker Hub profiles](docs/screenshots/roast.webp)
+
+## Quick start
+
+1. `git clone https://github.com/theflighttechofficial/Cooked-the-profile-roaster && cd Cooked-the-profile-roaster && npm install`
+2. `cp .env.example .env` and set `GEMINI_API_KEY` ([free key](https://aistudio.google.com/apikey)). Skip it and you get offline roasts.
+3. `npm run dev`, then open http://localhost:3000.
+
+Or with Docker:
+
+```bash
+docker build -t cooked .
+docker run -p 3000:3000 -e GEMINI_API_KEY=your-key cooked
+```
+
+## What it does
+
+- **Roast**: stack up to 4 profiles from different platforms into one roast. You can also paste text the APIs can't reach, like a LinkedIn "about" section or a resume.
+- **Battle**: two profiles go three rounds, and the AI picks who is less cooked.
+- **Screenshot**: upload a screenshot (Spotify Wrapped, a bio, Screen Time) and Gemini reads it.
+- 6 roaster personas × 3 heat levels. Save the card as a PNG, copy it, share it, or have your browser read it out loud.
 - With no AI key, an offline roaster still writes roasts from your real numbers.
-
-![Cooked home page](docs/screenshots/hero.webp)
 
 ## Screenshots
 
 The profiles below are real crates.io, Docker Hub and GitLab data. The roast text comes from the offline roaster; with `GEMINI_API_KEY` set, Gemini writes it instead.
 
-| Build your plate | The roast |
+| Home | Build your plate |
 |---|---|
-| ![Two fetched profiles with persona and heat controls](docs/screenshots/plate.webp) | ![Roast card with score dial, red flags and diagnostics](docs/screenshots/roast.webp) |
+| ![Cooked home page](docs/screenshots/hero.webp) | ![Two fetched profiles with persona and heat controls](docs/screenshots/plate.webp) |
 | **Roast battle** | **All 34 platforms** |
 | ![Battle between two profiles over three rounds](docs/screenshots/battle.webp) | ![Grid of every connector, grouped by category](docs/screenshots/platforms.webp) |
 
@@ -74,15 +94,7 @@ npm run check:connectors              # every connector, against a real example 
 npm run check:connectors github steam # only some
 ```
 
-## Run it
-
-```bash
-npm install
-cp .env.example .env   # add GEMINI_API_KEY at least
-npm run dev            # http://localhost:3000
-```
-
-Production:
+## Run in production
 
 ```bash
 npm run build   # client into dist/, server into dist/server.js
@@ -126,3 +138,7 @@ scripts/              connector health check
 - `POST /api/roast/image` `{ image: dataURL, persona, heat, note }`
 
 The roast endpoints fetch every profile again on the server, so a client cannot send made-up stats to the AI.
+
+## License
+
+[MIT](LICENSE)
