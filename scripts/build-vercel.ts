@@ -40,7 +40,9 @@ writeFileSync(
       routes: [
         { src: '^/api/(.*)$', dest: '/api/index?__path=$1' },
         { handle: 'filesystem' },
-        { src: '^/(.*)$', dest: '/index.html' },
+        // SPA fallback only for paths without a file extension, so a missing
+        // robots.txt, sitemap.xml or asset is a real 404, never index.html
+        { src: '^/((?!.*\\.).*)$', dest: '/index.html' },
       ],
     },
     null,

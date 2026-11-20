@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cooked — get roasted by your own data</title>
-    <meta name="description" content="Connect real public profiles from 34 platforms — GitHub, LeetCode, Steam, Letterboxd, Bluesky, Chess.com and more — and get an AI roast built from your actual stats." />
+    <meta name="description" content="Get roasted by your own data. Cooked pulls real public stats from 34 platforms like GitHub, LeetCode and Steam, then writes an AI roast." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://cooked-the-profile-roaster.vercel.app/" />
     <meta property="og:title" content="Cooked — get roasted by your own data" />
     <meta property="og:description" content="Real public stats from 34 platforms, turned into one AI roast." />
     <meta property="og:type" content="website" />
@@ -21,6 +23,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <noscript>
+      <main>
+        <h1>Get roasted by your own data</h1>
+        <p>Cooked pulls your real public stats from 34 platforms, then an AI writes a roast built from them. Stack several profiles into one roast, battle a friend, or upload a screenshot. Save the result as an image and share it.</p>
+        <h2>Supported platforms</h2>
+        <ul>
+          <li><strong>Code:</strong> GitHub, GitLab, Codeberg, Stack Overflow, npm, crates.io, Hugging Face, Docker Hub</li>
+          <li><strong>Competitive programming and typing:</strong> LeetCode, Codeforces, AtCoder, Codewars, Monkeytype</li>
+          <li><strong>Social and writing:</strong> Hacker News, Lobsters, DEV, Hashnode, Medium, Bluesky, Mastodon, Reddit, Wikipedia</li>
+          <li><strong>Film, anime, music and books:</strong> Letterboxd, MyAnimeList, AniList, Last.fm, Discogs, Open Library</li>
+          <li><strong>Games:</strong> Steam, Chess.com, Lichess, Duolingo, speedrun.com, Pokémon Showdown</li>
+        </ul>
+        <p>Cooked needs JavaScript to run. Turn it on to get roasted.</p>
+      </main>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
