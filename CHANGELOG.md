@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Groq as a text-only fallback after Gemini (`GROQ_API_KEY`, model `llama-3.1-8b-instant` unless `GROQ_MODEL` is set). Order: Gemini, Groq, Ollama, local roaster.
+- Gemini now uses `gemini-3.5-flash-lite` by default (`GEMINI_MODEL` overrides it) and is the only engine that reads screenshots.
+
 - Roasts never fail because of the AI. Any Gemini failure (missing or rejected key, overload, timeout, bad output) falls through to Ollama when `OLLAMA_URL` is set, then to a new built-in local roaster.
 - The local roaster writes in every persona and heat level, for single roasts, multi-profile roasts, battles and pasted text. It replaces the old template roasts.
 - Screenshot roasts work without a vision model: the browser reads the text with on-device OCR and the text is roasted.

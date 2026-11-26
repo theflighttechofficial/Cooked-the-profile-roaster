@@ -29,7 +29,7 @@ const post = <T,>(url: string, body: unknown) =>
 const ref = (p: Profile) => ({ platform: p.platform, handle: p.handle });
 
 export const api = {
-  connectors: () => call<{ connectors: ConnectorInfo[]; ai: boolean; ollama: boolean; vision: boolean }>('/api/connectors'),
+  connectors: () => call<{ connectors: ConnectorInfo[]; ai: boolean; gemini: boolean; groq: boolean; ollama: boolean; vision: boolean }>('/api/connectors'),
   profile: (platform: string, handle: string) =>
     call<Profile>(`/api/profile/${encodeURIComponent(platform)}?handle=${encodeURIComponent(handle)}`),
   roast: (profiles: Profile[], persona: Persona, heat: Heat, extra: string) =>

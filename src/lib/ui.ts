@@ -47,6 +47,7 @@ export function since(iso?: string) {
 /** Label for who wrote a roast. */
 export function engineLabel(engine: string, kind: 'roast' | 'judge' = 'roast') {
   if (engine === 'gemini') return kind === 'roast' ? 'AI roast' : 'AI judged';
+  if (engine === 'groq') return kind === 'roast' ? 'AI roast (Groq)' : 'AI judged (Groq)';
   if (engine === 'ollama') return kind === 'roast' ? 'local AI roast' : 'local AI judged';
   return kind === 'roast' ? 'local roast' : 'local judge';
 }

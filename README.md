@@ -48,15 +48,16 @@ Every roast goes down this chain and stops at the first step that works:
 
 | Step | Engine | Runs where | Needs |
 |---|---|---|---|
-| 1 | Gemini | Google | `GEMINI_API_KEY` |
-| 2 | Ollama, any local model (`llama3.2` by default) | your machine or Docker host | `OLLAMA_URL` |
-| 3 | Built-in local roaster | inside the Cooked server | nothing |
+| 1 | Gemini (`gemini-3.5-flash-lite` by default) | Google | `GEMINI_API_KEY` |
+| 2 | Groq, text only (`llama-3.1-8b-instant` by default) | Groq | `GROQ_API_KEY` |
+| 3 | Ollama, any local model (`llama3.2` by default) | your machine or Docker host | `OLLAMA_URL` |
+| 4 | Built-in local roaster | inside the Cooked server | nothing |
 
-A missing key, a rejected key, an overloaded model, a timeout or a malformed answer all count as "did not work", so the next step runs. The card shows which engine wrote it: "AI roast", "local AI roast" or "local roast".
+A missing key, a rejected key, an overloaded model, a timeout or a malformed answer all count as "did not work", so the next step runs. The card shows which engine wrote it: "AI roast", "AI roast (Groq)", "local AI roast" or "local roast". Groq's free tier has per-minute and per-day limits; when they are hit, Groq answers 429 and the roast moves on to the next step.
 
 The built-in roaster reads the same profile data the AI gets. It turns stats into signals (clout, output, time sunk, skill, unfinished things) and writes in the persona you picked (chef, staff engineer, Gen Z, parent, bard, therapist) at the heat you picked. It handles single roasts, multi-profile roasts, battles and pasted text.
 
-**Screenshots.** A vision model reads the image: Gemini, or Ollama with `OLLAMA_VISION_MODEL` (for example `llava`). Without one, your browser reads the text with on-device OCR ([tesseract.js](https://github.com/naptha/tesseract.js), served from this site, no CDN), and the text is roasted instead. The image itself is never uploaded in that case.
+**Screenshots.** Only Gemini reads images. Without it, or when it fails, your browser reads the text with on-device OCR ([tesseract.js](https://github.com/naptha/tesseract.js), served from this site, no CDN), and the text is roasted instead. The image itself is never uploaded in that case.
 
 **Ollama setup:**
 
@@ -65,7 +66,7 @@ ollama pull llama3.2
 OLLAMA_URL=http://localhost:11434 npm run dev
 ```
 
-Ollama only helps where the Cooked server can reach it: your own machine or a Docker host. On Vercel, steps 1 and 3 apply.
+Ollama only helps where the Cooked server can reach it: your own machine or a Docker host. On Vercel, steps 1, 2 and 4 apply.
 
 ## Connectors
 
@@ -132,7 +133,7 @@ npm start
 the Vite client as static files, and the Express API bundled into one Node function that serves every `/api/*` route.
 
 1. Import the repo in Vercel. Keep the defaults; `vercel.json` sets the build.
-2. In **Settings → Environment Variables**, add `GEMINI_API_KEY` (and any optional keys from `.env.example`).
+2. In **Settings → Environment Variables**, add `GEMINI_API_KEY` and `GROQ_API_KEY` (and any optional keys from `.env.example`).
 3. Redeploy. Environment variables only apply to new deployments.
 
 Check it: `https://<your-app>.vercel.app/api/health` should return `{"ok":true,"ai":true}`.
@@ -148,6 +149,7 @@ server/
   vercel.ts           Vercel function entry (same API)
   http.ts             fetch with timeout/retry, XML and text helpers
   roast.ts            Gemini prompts, schemas, engine fallback chain
+  groq.ts             optional Groq text model
   ollama.ts           optional local LLM through Ollama
   local-roaster.ts    built-in roast engine (no network, no key)
   connectors/         one file per category, registry in index.ts

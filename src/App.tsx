@@ -149,7 +149,7 @@ export default function App() {
           <div className="ml-auto flex items-center gap-2 text-sm">
             <a href="#platforms" className="hidden rounded-full px-3 py-1.5 text-dust hover:text-cream sm:block">Platforms</a>
             <a href="#how" className="hidden rounded-full px-3 py-1.5 text-dust hover:text-cream sm:block">How it works</a>
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] ${ai ? 'border-mint/30 text-mint' : 'border-flame/30 text-flame'}`} title={ai ? 'Gemini writes the roasts; the local roaster steps in if it fails' : 'No AI key on this server: the built-in local roaster writes the roasts'}>
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] ${ai ? 'border-mint/30 text-mint' : 'border-flame/30 text-flame'}`} title={ai ? 'An AI writes the roasts; the local roaster steps in if every AI fails' : 'No AI key on this server: the built-in local roaster writes the roasts'}>
               <span className={`size-1.5 rounded-full ${ai ? 'bg-mint' : 'bg-flame'}`} /> {ai ? 'AI live' : 'local roaster'}
             </span>
             <a href="https://github.com/theflighttechofficial/Cooked-the-profile-roaster" target="_blank" rel="noreferrer" aria-label="Source on GitHub" className="rounded-full p-2 text-dust hover:text-cream">
