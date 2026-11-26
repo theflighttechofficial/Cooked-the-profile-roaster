@@ -46,6 +46,7 @@ function saveHistory(h: Burn[]) {
 export default function App() {
   const [connectors, setConnectors] = useState<ConnectorInfo[]>([]);
   const [ai, setAi] = useState(false);
+  const [vision, setVision] = useState(false);
   const [bootError, setBootError] = useState('');
   const [mode, setMode] = useState<Mode>('roast');
   const [platform, setPlatform] = useState<ConnectorInfo>();
@@ -68,6 +69,7 @@ export default function App() {
       .then((r) => {
         setConnectors(r.connectors);
         setAi(r.ai);
+        setVision(r.vision);
         setPlatform(r.connectors.find((c) => c.id === 'github') ?? r.connectors[0]);
       })
       .catch((e) => setBootError(e.message));
@@ -147,8 +149,8 @@ export default function App() {
           <div className="ml-auto flex items-center gap-2 text-sm">
             <a href="#platforms" className="hidden rounded-full px-3 py-1.5 text-dust hover:text-cream sm:block">Platforms</a>
             <a href="#how" className="hidden rounded-full px-3 py-1.5 text-dust hover:text-cream sm:block">How it works</a>
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] ${ai ? 'border-mint/30 text-mint' : 'border-flame/30 text-flame'}`} title={ai ? 'Gemini is connected' : 'No GEMINI_API_KEY: using template roasts'}>
-              <span className={`size-1.5 rounded-full ${ai ? 'bg-mint' : 'bg-flame'}`} /> {ai ? 'AI live' : 'offline mode'}
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] ${ai ? 'border-mint/30 text-mint' : 'border-flame/30 text-flame'}`} title={ai ? 'Gemini writes the roasts; the local roaster steps in if it fails' : 'No AI key on this server: the built-in local roaster writes the roasts'}>
+              <span className={`size-1.5 rounded-full ${ai ? 'bg-mint' : 'bg-flame'}`} /> {ai ? 'AI live' : 'local roaster'}
             </span>
             <a href="https://github.com/theflighttechofficial/Cooked-the-profile-roaster" target="_blank" rel="noreferrer" aria-label="Source on GitHub" className="rounded-full p-2 text-dust hover:text-cream">
               <Github className="size-5" />
@@ -212,7 +214,7 @@ export default function App() {
           ) : mode === 'battle' ? (
             <BattleMode connectors={connectors} defaultPlatform={platform} persona={persona} heat={heat} controls={controls} />
           ) : mode === 'screenshot' ? (
-            <ScreenshotMode persona={persona} heat={heat} ai={ai} controls={controls} onRoast={(r) => finish(r, [{ displayName: 'Your screenshot', platformName: 'Screenshot' }])} />
+            <ScreenshotMode persona={persona} heat={heat} vision={vision} controls={controls} onRoast={(r) => finish(r, [{ displayName: 'Your screenshot', platformName: 'Screenshot' }])} />
           ) : (
             <div className="space-y-8">
               <div>
@@ -311,7 +313,7 @@ export default function App() {
             {[
               ['01', 'Real connectors', 'Every platform is read through its official public API or public feed: GitHub REST, LeetCode GraphQL, Bluesky XRPC, Steam community XML, Letterboxd RSS and so on. No logins, no scraping behind walls.'],
               ['02', 'Receipts, not vibes', 'Each connector turns raw data into stats and facts: zero-star repos, dropped anime, 3 AM commits, downvoted comments. The AI only sees those facts and is told not to invent any.'],
-              ['03', 'Served hot', 'Gemini writes the roast in the voice you picked. No API key? An offline roaster still cooks from your real numbers. Save it as an image, share it, or have your browser read it out.'],
+              ['03', 'Served hot', 'Gemini writes the roast in the voice you picked. If the AI is down or not set up, a built-in local roaster takes over, in the same voice, from the same numbers. Save it as an image, share it, or have your browser read it out.'],
             ].map(([n, t, d]) => (
               <div key={n} className="card p-6">
                 <span className="text-fire font-display text-4xl font-extrabold">{n}</span>

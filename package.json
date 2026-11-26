@@ -10,17 +10,19 @@
     "build:vercel": "tsx scripts/build-vercel.ts",
     "start": "NODE_ENV=production node dist/server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx --test server/**/*.test.ts",
+    "test": "tsx --test 'server/**/*.test.ts'",
     "check:connectors": "tsx scripts/check-connectors.ts"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
+    "@tesseract.js-data/eng": "^1.0.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
-    "react-dom": "^19.0.1"
+    "react-dom": "^19.0.1",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",

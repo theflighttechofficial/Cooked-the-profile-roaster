@@ -2,6 +2,7 @@ import { Crown, Loader2, RotateCcw, Swords } from 'lucide-react';
 import { useState } from 'react';
 import type { BattleResult, ConnectorInfo, Heat, Persona, Profile } from '../../shared/types.ts';
 import { api } from '../lib/api.ts';
+import { engineLabel } from '../lib/ui.ts';
 import { ProfileAdder } from './ProfileAdder.tsx';
 import { Avatar, ProfileCard } from './ProfileCard.tsx';
 import { ScoreDial } from './ScoreDial.tsx';
@@ -86,7 +87,7 @@ export function BattleMode({ connectors, defaultPlatform, persona, heat, control
             </ol>
 
             <blockquote className="mt-8 border-l-4 border-ember pl-5 font-display text-xl font-bold leading-snug sm:text-2xl">“{result.finalBlow}”</blockquote>
-            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dust/70">{result.engine === 'gemini' ? 'AI judged' : 'offline judge'}</p>
+            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dust/70">{engineLabel(result.engine, 'judge')}</p>
           </div>
         </div>
         <button onClick={() => setResult(null)} className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-soot px-4 py-2.5 text-sm hover:bg-ash">

@@ -19,7 +19,7 @@ async function start() {
     app.use(vite.middlewares);
   }
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Cooked is serving on http://localhost:${PORT}  (AI: ${hasGemini() ? 'Gemini' : 'offline roasts — set GEMINI_API_KEY'})`);
+    console.log(`Cooked is serving on http://localhost:${PORT}  (AI: ${hasGemini() ? 'Gemini' : 'local roaster — set GEMINI_API_KEY for AI roasts'})`);
   });
 }
 

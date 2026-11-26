@@ -2,7 +2,8 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import type { Heat, Persona, Profile } from '../shared/types.ts';
 import { connectorInfo, fetchProfile } from './connectors/index.ts';
 import { HttpError } from './http.ts';
-import { battle, hasGemini, roastImage, roastProfiles } from './roast.ts';
+import { hasOllama } from './ollama.ts';
+import { battle, hasGemini, hasVision, roastImage, roastProfiles } from './roast.ts';
 
 // The API, shared by the long-running server (server/index.ts) and the Vercel function (server/vercel.ts)
 export const app = express();
@@ -35,7 +36,8 @@ const wrap = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Re
   fn(req, res).catch((err: unknown) => {
     const status = err instanceof HttpError ? err.status : 500;
     if (!(err instanceof HttpError)) console.error(err);
-    res.status(status).json({ error: err instanceof HttpError ? err.message : 'Something broke on our side. Try again.' });
+    const fallback = (err as { fallback?: string })?.fallback;
+    res.status(status).json({ error: err instanceof HttpError ? err.message : 'Something broke on our side. Try again.', ...(fallback ? { fallback } : {}) });
   });
 
 /** Profiles are always re-fetched on the server (cached), so the AI only sees real data. */
@@ -46,10 +48,13 @@ async function loadRefs(refs: unknown, max: number): Promise<Profile[]> {
   );
 }
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, ai: hasGemini() }));
+// ai: Gemini is configured. Roasts always work: Ollama (if set) and the local roaster back it up.
+const engines = () => ({ ai: hasGemini(), ollama: hasOllama(), vision: hasVision() });
+
+app.get('/api/health', (_req, res) => res.json({ ok: true, ...engines() }));
 
 app.get('/api/connectors', (_req, res) => {
-  res.json({ connectors: connectorInfo(), ai: hasGemini() });
+  res.json({ connectors: connectorInfo(), ...engines() });
 });
 
 app.get(
@@ -68,7 +73,9 @@ app.post(
     const profiles = await loadRefs(req.body?.profiles, 4);
     const extra = typeof req.body?.extra === 'string' ? req.body.extra.slice(0, 6000) : '';
     if (!profiles.length && extra.trim().length < 20) throw new HttpError(400, 'Add at least one profile, or paste a bio of 20+ characters.');
-    res.json(await roastProfiles(profiles, persona(req.body?.persona), heat(req.body?.heat), extra));
+    // Where the free text came from, so the local roaster can say "on your screenshot"
+    const source = req.body?.source === 'screenshot' ? 'your screenshot' : 'your bio';
+    res.json(await roastProfiles(profiles, persona(req.body?.persona), heat(req.body?.heat), extra, source));
   }),
 );
 

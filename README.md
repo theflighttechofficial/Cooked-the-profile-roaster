@@ -12,7 +12,7 @@ Type a username from one of 34 platforms. Cooked pulls your real public stats an
 ## Quick start
 
 1. `git clone https://github.com/theflighttechofficial/Cooked-the-profile-roaster && cd Cooked-the-profile-roaster && npm install`
-2. `cp .env.example .env` and set `GEMINI_API_KEY` ([free key](https://aistudio.google.com/apikey)). Skip it and you get offline roasts.
+2. `cp .env.example .env` and set `GEMINI_API_KEY` ([free key](https://aistudio.google.com/apikey)). Skip it and the built-in local roaster writes the roasts.
 3. `npm run dev`, then open http://localhost:3000.
 
 Or with Docker:
@@ -28,11 +28,11 @@ docker run -p 3000:3000 -e GEMINI_API_KEY=your-key cooked
 - **Battle**: two profiles go three rounds, and the AI picks who is less cooked.
 - **Screenshot**: upload a screenshot (Spotify Wrapped, a bio, Screen Time) and Gemini reads it.
 - 6 roaster personas × 3 heat levels. Save the card as a PNG, copy it, share it, or have your browser read it out loud.
-- With no AI key, an offline roaster still writes roasts from your real numbers.
+- A roast always comes back. If the AI is down or not set up, a local engine takes over (see [When the AI is unavailable](#when-the-ai-is-unavailable)).
 
 ## Screenshots
 
-The profiles below are real crates.io, Docker Hub and GitLab data. The roast text comes from the offline roaster; with `GEMINI_API_KEY` set, Gemini writes it instead.
+The profiles below are real crates.io, Docker Hub and GitLab data. The roast text comes from the local roaster; with `GEMINI_API_KEY` set, Gemini writes it instead.
 
 | Home | Build your plate |
 |---|---|
@@ -41,6 +41,31 @@ The profiles below are real crates.io, Docker Hub and GitLab data. The roast tex
 | ![Battle between two profiles over three rounds](docs/screenshots/battle.webp) | ![Grid of every connector, grouped by category](docs/screenshots/platforms.webp) |
 
 <p align="center"><img src="docs/screenshots/mobile.webp" alt="Cooked on a phone" width="300"></p>
+
+## When the AI is unavailable
+
+Every roast goes down this chain and stops at the first step that works:
+
+| Step | Engine | Runs where | Needs |
+|---|---|---|---|
+| 1 | Gemini | Google | `GEMINI_API_KEY` |
+| 2 | Ollama, any local model (`llama3.2` by default) | your machine or Docker host | `OLLAMA_URL` |
+| 3 | Built-in local roaster | inside the Cooked server | nothing |
+
+A missing key, a rejected key, an overloaded model, a timeout or a malformed answer all count as "did not work", so the next step runs. The card shows which engine wrote it: "AI roast", "local AI roast" or "local roast".
+
+The built-in roaster reads the same profile data the AI gets. It turns stats into signals (clout, output, time sunk, skill, unfinished things) and writes in the persona you picked (chef, staff engineer, Gen Z, parent, bard, therapist) at the heat you picked. It handles single roasts, multi-profile roasts, battles and pasted text.
+
+**Screenshots.** A vision model reads the image: Gemini, or Ollama with `OLLAMA_VISION_MODEL` (for example `llava`). Without one, your browser reads the text with on-device OCR ([tesseract.js](https://github.com/naptha/tesseract.js), served from this site, no CDN), and the text is roasted instead. The image itself is never uploaded in that case.
+
+**Ollama setup:**
+
+```bash
+ollama pull llama3.2
+OLLAMA_URL=http://localhost:11434 npm run dev
+```
+
+Ollama only helps where the Cooked server can reach it: your own machine or a Docker host. On Vercel, steps 1 and 3 apply.
 
 ## Connectors
 
@@ -122,7 +147,9 @@ server/
   index.ts            long-running server: API + Vite in dev, static files in prod
   vercel.ts           Vercel function entry (same API)
   http.ts             fetch with timeout/retry, XML and text helpers
-  roast.ts            Gemini prompts, schemas, model fallback, offline roaster
+  roast.ts            Gemini prompts, schemas, engine fallback chain
+  ollama.ts           optional local LLM through Ollama
+  local-roaster.ts    built-in roast engine (no network, no key)
   connectors/         one file per category, registry in index.ts
 shared/types.ts       types used by the server and the client
 src/                  React 19 + Tailwind 4 client

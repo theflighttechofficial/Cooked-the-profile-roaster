@@ -3,7 +3,7 @@ import { Check, Copy, Download, Flag, Loader2, RotateCcw, Share2, Sparkles, Squa
 import { useEffect, useRef, useState } from 'react';
 import type { Profile, Roast } from '../../shared/types.ts';
 import { REPO_URL, SITE_URL, bare } from '../lib/site.ts';
-import { doneness } from '../lib/ui.ts';
+import { doneness, engineLabel } from '../lib/ui.ts';
 import { Avatar } from './ProfileCard.tsx';
 import { ScoreDial } from './ScoreDial.tsx';
 
@@ -97,7 +97,7 @@ export function RoastCard({ roast, subjects, onReset }: { roast: Roast; subjects
             <span className="font-display text-lg font-extrabold normal-case tracking-tight text-cream">cooked<span className="text-ember">.</span></span>
             <span className="flex items-center gap-3">
               {subjects.map((s) => s.platformName).join(' · ')}
-              <span className="rounded-full border border-white/10 px-2 py-0.5">{roast.engine === 'gemini' ? 'AI roast' : 'offline roast'}</span>
+              <span className="rounded-full border border-white/10 px-2 py-0.5">{engineLabel(roast.engine)}</span>
             </span>
           </header>
 
