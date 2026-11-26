@@ -1,5 +1,14 @@
 import type { BattleResult, ConnectorInfo, Heat, Persona, Profile, Roast } from '../../shared/types.ts';
 
+/** Error from the API. `fallback` names what the client should do instead (e.g. "ocr"). */
+export class ApiError extends Error {
+  fallback?: string;
+  constructor(message: string, fallback?: string) {
+    super(message);
+    this.fallback = fallback;
+  }
+}
+
 async function call<T>(url: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
@@ -10,7 +19,7 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
   const body = await res.json().catch(() => null);
   // No JSON at all means the request never reached the API (static-only hosting, wrong route)
   if (body === null) throw new Error(`The Cooked API is not reachable (${res.status}). The site was deployed without its server.`);
-  if (!res.ok) throw new Error(body.error || `Request failed (${res.status})`);
+  if (!res.ok) throw new ApiError(body.error || `Request failed (${res.status})`, body.fallback);
   return body as T;
 }
 
@@ -20,11 +29,14 @@ const post = <T,>(url: string, body: unknown) =>
 const ref = (p: Profile) => ({ platform: p.platform, handle: p.handle });
 
 export const api = {
-  connectors: () => call<{ connectors: ConnectorInfo[]; ai: boolean }>('/api/connectors'),
+  connectors: () => call<{ connectors: ConnectorInfo[]; ai: boolean; ollama: boolean; vision: boolean }>('/api/connectors'),
   profile: (platform: string, handle: string) =>
     call<Profile>(`/api/profile/${encodeURIComponent(platform)}?handle=${encodeURIComponent(handle)}`),
   roast: (profiles: Profile[], persona: Persona, heat: Heat, extra: string) =>
     post<Roast>('/api/roast', { profiles: profiles.map(ref), persona, heat, extra }),
+  /** Roast free text with no profiles, e.g. text read from a screenshot. */
+  roastText: (text: string, persona: Persona, heat: Heat) =>
+    post<Roast>('/api/roast', { profiles: [], persona, heat, extra: text, source: 'screenshot' }),
   roastImage: (image: string, persona: Persona, heat: Heat, note: string) =>
     post<Roast>('/api/roast/image', { image, persona, heat, note }),
   battle: (a: Profile, b: Profile, persona: Persona, heat: Heat) =>

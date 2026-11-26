@@ -1,23 +1,26 @@
 import { ImageUp, Loader2, Flame, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { Heat, Persona, Roast } from '../../shared/types.ts';
-import { api } from '../lib/api.ts';
+import { api, ApiError } from '../lib/api.ts';
+import { readScreenshotText } from '../lib/ocr.ts';
 
 interface Props {
   persona: Persona;
   heat: Heat;
-  ai: boolean;
+  /** A server AI can read images. Without one, text is read on the device. */
+  vision: boolean;
   controls: React.ReactNode;
   onRoast: (r: Roast) => void;
 }
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
-export function ScreenshotMode({ persona, heat, ai, controls, onRoast }: Props) {
+export function ScreenshotMode({ persona, heat, vision, controls, onRoast }: Props) {
   const [image, setImage] = useState('');
   const [note, setNote] = useState('');
   const [drag, setDrag] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState('');
   const [error, setError] = useState('');
   const input = useRef<HTMLInputElement>(null);
 
@@ -31,23 +34,41 @@ export function ScreenshotMode({ persona, heat, ai, controls, onRoast }: Props) 
     reader.readAsDataURL(file);
   };
 
+  // No vision model (or it failed): read the text on this device, then roast the text
+  const roastFromText = async () => {
+    setStage('Reading the text on your device…');
+    const text = await readScreenshotText(image, (pct) => setStage(`Reading the text on your device… ${pct}%`));
+    const combined = [note.trim() && `Note: ${note.trim()}`, text].filter(Boolean).join('\n');
+    if (combined.replace(/\s/g, '').length < 20) throw new Error('Could not find enough text in that screenshot. Try one with more words or numbers.');
+    setStage('Roasting what it says…');
+    return api.roastText(combined, persona, heat);
+  };
+
   const go = async () => {
     setLoading(true);
     setError('');
     try {
-      onRoast(await api.roastImage(image, persona, heat, note));
+      if (!vision) return onRoast(await roastFromText());
+      setStage('Reading every pixel…');
+      try {
+        onRoast(await api.roastImage(image, persona, heat, note));
+      } catch (e) {
+        if (e instanceof ApiError && e.fallback === 'ocr') onRoast(await roastFromText());
+        else throw e;
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
+      setStage('');
     }
   };
 
   return (
     <div className="space-y-8">
-      {!ai && (
+      {!vision && (
         <p className="rounded-2xl border border-flame/30 bg-flame/[0.06] p-4 text-sm text-flame">
-          Screenshot roasts read the image with Gemini. Add <code className="font-mono">GEMINI_API_KEY</code> to the server to turn this on.
+          No AI vision on this server right now, so your device reads the text in the screenshot and the local roaster cooks it. Nothing is uploaded until the text is read.
         </p>
       )}
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
@@ -89,10 +110,10 @@ export function ScreenshotMode({ persona, heat, ai, controls, onRoast }: Props) 
       <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={go}
-          disabled={!image || loading || !ai}
+          disabled={!image || loading}
           className="bg-fire glow inline-flex h-14 items-center gap-2 rounded-full px-8 font-display text-lg font-bold text-char transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
         >
-          {loading ? <Loader2 className="size-5 animate-spin" /> : <Flame className="size-5" />} {loading ? 'Reading every pixel…' : 'Roast this screenshot'}
+          {loading ? <Loader2 className="size-5 animate-spin" /> : <Flame className="size-5" />} {loading ? stage || 'Working…' : 'Roast this screenshot'}
         </button>
         {error && <p className="text-sm text-[#ff8a7a]" role="alert">{error}</p>}
       </div>

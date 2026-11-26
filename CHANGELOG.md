@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Roasts never fail because of the AI. Any Gemini failure (missing or rejected key, overload, timeout, bad output) falls through to Ollama when `OLLAMA_URL` is set, then to a new built-in local roaster.
+- The local roaster writes in every persona and heat level, for single roasts, multi-profile roasts, battles and pasted text. It replaces the old template roasts.
+- Screenshot roasts work without a vision model: the browser reads the text with on-device OCR and the text is roasted.
+- Roast cards and battles show which engine wrote them.
+
 - Exported roast cards now carry a small footer with the site and repository links. Share text and tweets link to the live site.
 - Added an MIT license, a Dockerfile, a one-click Vercel deploy button and a social preview image.
 
