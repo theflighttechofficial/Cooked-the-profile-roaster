@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import type { BattleResult, Heat, Persona, Profile, Roast, RoastMeter } from '../shared/types.ts';
 import { HttpError } from './http.ts';
 import { localBattle, localRoast, METER_LABELS } from './local-roaster.ts';
+import { groqGenerate, hasGroq } from './groq.ts';
 import { hasOllama, ollamaGenerate } from './ollama.ts';
 
 export { METER_LABELS };
@@ -93,7 +94,10 @@ const battleSchema = {
 let client: GoogleGenAI | null = null;
 export const hasGemini = () => !!process.env.GEMINI_API_KEY;
 /** Which engines can read a screenshot. Without one, the client reads the text with OCR. */
-export const hasVision = () => hasGemini() || !!process.env.OLLAMA_VISION_MODEL;
+export const hasVision = hasGemini;
+
+// Gemini 3.5 Flash-Lite unless GEMINI_MODEL says otherwise
+const GEMINI_DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 
 function ai() {
   if (!process.env.GEMINI_API_KEY) return null;
@@ -101,11 +105,11 @@ function ai() {
   return client;
 }
 
-/** Try the configured model, then the always-current aliases. Retries transient overloads. Null means "try the next engine". */
+/** One Gemini model, retried on transient overloads. Null means "try the next engine". */
 async function gemini(contents: any, schema: any): Promise<any> {
   const gen = ai();
   if (!gen) return null;
-  const models = [...new Set([process.env.GEMINI_MODEL, 'gemini-flash-latest', 'gemini-flash-lite-latest'].filter(Boolean) as string[])];
+  const models = [process.env.GEMINI_MODEL || GEMINI_DEFAULT_MODEL];
   let last: unknown;
   outer: for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -156,14 +160,17 @@ function normalizeRoast(r: any, engine: string): Roast {
 const validRoast = (r: any) => r && Array.isArray(r.paragraphs) && r.paragraphs.filter((p: unknown) => String(p ?? '').trim()).length >= 2 && r.title;
 const validBattle = (b: any) => b && Array.isArray(b.rounds) && b.rounds.length >= 2 && b.finalBlow;
 
-/** Gemini first, then Ollama when configured. Null when every AI engine failed. */
-async function generate(prompt: string, schema: any, image?: { mimeType: string; data: string }): Promise<{ out: any; engine: string } | null> {
-  const contents = image ? [{ role: 'user', parts: [{ inlineData: image }, { text: prompt }] }] : prompt;
-  const g = await gemini(contents, schema);
-  if (g) return { out: g, engine: 'gemini' };
-  if (hasOllama()) {
-    const o = await ollamaGenerate(prompt, schema, image?.data);
-    if (o) return { out: o, engine: 'ollama' };
+/** Gemini, then Groq, then Ollama, each only when configured. Null when every AI engine failed. */
+async function generate(prompt: string, schema: any): Promise<{ out: any; engine: string } | null> {
+  const engines: [string, boolean, () => Promise<any>][] = [
+    ['gemini', hasGemini(), () => gemini(prompt, schema)],
+    ['groq', hasGroq(), () => groqGenerate(prompt, schema)],
+    ['ollama', hasOllama(), () => ollamaGenerate(prompt, schema)],
+  ];
+  for (const [engine, on, run] of engines) {
+    if (!on) continue;
+    const out = await run();
+    if (out && (schema === battleSchema ? validBattle(out) : validRoast(out))) return { out, engine };
   }
   return null;
 }
@@ -200,13 +207,10 @@ export async function roastImage(base64: string, mimeType: string, persona: Pers
     `The image is a screenshot of someone's profile, feed, playlist, stats page or bio. Read every number and word in it and roast the person. Only use what is visible in the screenshot.
 ${note ? `They added this note: ${note.slice(0, 500)}` : ''}`,
   );
+  // Vision is Gemini only
   if (hasVision()) {
     const g = await gemini([{ role: 'user', parts: [{ inlineData: { mimeType, data: base64 } }, { text: prompt }] }], roastSchema);
     if (validRoast(g)) return normalizeRoast(g, 'gemini');
-    if (process.env.OLLAMA_VISION_MODEL) {
-      const o = await ollamaGenerate(prompt, roastSchema, base64, process.env.OLLAMA_VISION_MODEL);
-      if (validRoast(o)) return normalizeRoast(o, 'ollama');
-    }
   }
   throw Object.assign(new HttpError(503, 'No AI can read images right now, so the text will be read on your device instead.'), { fallback: 'ocr' });
 }

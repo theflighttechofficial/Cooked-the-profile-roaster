@@ -2,6 +2,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import type { Heat, Persona, Profile } from '../shared/types.ts';
 import { connectorInfo, fetchProfile } from './connectors/index.ts';
 import { HttpError } from './http.ts';
+import { hasGroq } from './groq.ts';
 import { hasOllama } from './ollama.ts';
 import { battle, hasGemini, hasVision, roastImage, roastProfiles } from './roast.ts';
 
@@ -48,8 +49,8 @@ async function loadRefs(refs: unknown, max: number): Promise<Profile[]> {
   );
 }
 
-// ai: Gemini is configured. Roasts always work: Ollama (if set) and the local roaster back it up.
-const engines = () => ({ ai: hasGemini(), ollama: hasOllama(), vision: hasVision() });
+// ai: some AI engine is configured. Roasts always work: the local roaster backs every engine up.
+const engines = () => ({ ai: hasGemini() || hasGroq() || hasOllama(), gemini: hasGemini(), groq: hasGroq(), ollama: hasOllama(), vision: hasVision() });
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, ...engines() }));
 
